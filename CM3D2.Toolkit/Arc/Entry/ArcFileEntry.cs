@@ -2,9 +2,9 @@
 // CM3D2.Toolkit - ArcFileEntry.cs
 // --------------------------------------------------
 
-using CM3D2.Toolkit.Arc.FilePointer;
+using CM3D2.Toolkit.Guest4168Branch.Arc.FilePointer;
 
-namespace CM3D2.Toolkit.Arc.Entry
+namespace CM3D2.Toolkit.Guest4168Branch.Arc.Entry
 {
     /// <summary>
     ///     Arc File Entry
@@ -33,5 +33,10 @@ namespace CM3D2.Toolkit.Arc.Entry
         /// </summary>
         /// <param name="fileSystem">File System</param>
         internal ArcFileEntry(ArcFileSystem fileSystem) : base(fileSystem) {}
+
+        public override bool IsFile()
+        {
+            return true;
+        }
     }
 }

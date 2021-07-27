@@ -2,7 +2,7 @@
 // CM3D2.Toolkit - MemoryFilePointer.cs
 // --------------------------------------------------
 
-namespace CM3D2.Toolkit.Arc.FilePointer
+namespace CM3D2.Toolkit.Guest4168Branch.Arc.FilePointer
 {
     /// <summary>
     ///     A In-Memory File Pointer

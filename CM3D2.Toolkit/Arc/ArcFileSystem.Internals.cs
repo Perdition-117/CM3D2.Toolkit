@@ -9,12 +9,12 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 
-using CM3D2.Toolkit.Arc.Entry;
-using CM3D2.Toolkit.Arc.FilePointer;
-using CM3D2.Toolkit.Arc.LambdaHolders;
-using CM3D2.Toolkit.Arc.Native;
+using CM3D2.Toolkit.Guest4168Branch.Arc.Entry;
+using CM3D2.Toolkit.Guest4168Branch.Arc.FilePointer;
+using CM3D2.Toolkit.Guest4168Branch.Arc.LambdaHolders;
+using CM3D2.Toolkit.Guest4168Branch.Arc.Native;
 
-namespace CM3D2.Toolkit.Arc
+namespace CM3D2.Toolkit.Guest4168Branch.Arc
 {
 
 
@@ -69,7 +69,7 @@ namespace CM3D2.Toolkit.Arc
             offset += 8 * dir.Depth; // sizeof(long)
 
             // Directories have to be Ordered by hash, then by offset when writing
-            var ordered = dir.Directories.OrderBy(entry => uuidToHash[entry.UniqueID]);
+            var ordered = dir.Directories.Values.OrderBy(entry => uuidToHash[entry.UniqueID]);
             foreach (var subDir in ordered)
                 CalculateHashTableOffsets_Internal(subDir, dict, uuidToHash, ref offset);
         }
@@ -451,7 +451,7 @@ namespace CM3D2.Toolkit.Arc
                     uuidToHash8.Add(entry.UniqueID, entry.UTF8Hash);
                     uuidToHash16.Add(entry.UniqueID, entry.UTF16Hash);
                 }
-                foreach (var entry in Files)
+                foreach (var entry in Files.Values)
                 {
                     uuidToHash8.Add(entry.UniqueID, entry.UTF8Hash);
                     uuidToHash16.Add(entry.UniqueID, entry.UTF16Hash);
@@ -463,7 +463,7 @@ namespace CM3D2.Toolkit.Arc
                 Dictionary<ulong, long> fileOffsetTable = new Dictionary<ulong, long>();
 
                 var compressGlob = CompressList.Select(Extensions.WildcardToRegex).ToList();
-                var files = Files.Select(entry =>
+                var files = Files.Values.Select(entry =>
                 {
                     var compress = compressGlob.Any(pat => Regex.IsMatch(entry.Name, pat));
                     return new FileTableEntryHolder
@@ -594,7 +594,7 @@ namespace CM3D2.Toolkit.Arc
             writer.Write((uint) 0);
 
             // Write Directory Entries
-            var dirs = current.Directories.OrderBy(entry => dirOffsets[entry.UniqueID]).ToList();
+            var dirs = current.Directories.Values.OrderBy(entry => dirOffsets[entry.UniqueID]).ToList();
             foreach (var dir in dirs)
             {
                 writer.Write((ulong) uuidToHash[dir.UniqueID]);
@@ -602,7 +602,7 @@ namespace CM3D2.Toolkit.Arc
             }
 
             // Write File Entries
-            var files = current.Files.OrderBy(entry => uuidToHash[entry.UniqueID]).ToList();
+            var files = current.Files.Values.OrderBy(entry => uuidToHash[entry.UniqueID]).ToList();
             foreach (var file in files)
             {
                 writer.Write((ulong) uuidToHash[file.UniqueID]);
@@ -638,7 +638,7 @@ namespace CM3D2.Toolkit.Arc
         {
             Logger.Debug("Writing Name Table");
 
-            var fileNames = Files.Cast<ArcEntryBase>();
+            var fileNames = Files.Values.Cast<ArcEntryBase>();
             var dirNames = Directories.Cast<ArcEntryBase>();
 
            
@@ -676,13 +676,14 @@ namespace CM3D2.Toolkit.Arc
                 return false;
             }
 
-            var existing = targetDir.Directories.FirstOrDefault(entry => entry.UTF16Hash == sourceDir.UTF16Hash);
+            var existing = targetDir.Directories.ContainsKey(sourceDir.UTF16Hash) ? targetDir.Directories[sourceDir.UTF16Hash] : null; //targetDir.Directories.FirstOrDefault(entry => entry.UTF16Hash == sourceDir.UTF16Hash);
             // Create Folder if not Exists
             if (existing == null)
             {
                 var newDir = new ArcDirectoryEntry(this)
                 {
                     Name = sourceDir.Name,
+                    ArcPath = sourceDir.ArcPath
                 };
                 _directories.Add(newDir);
                 newDir.SetParent(targetDir);
@@ -691,12 +692,12 @@ namespace CM3D2.Toolkit.Arc
             }
 
             // Copy all Files into the existing (or new) folder
-            foreach (var file in sourceDir.Files.ToList())
+            foreach (var file in sourceDir.Files.Values.ToList())
                 if (!CopyFile_Internal(file, existing))
                     return false;
 
             // Copy All Directories existing (or new) folder
-            foreach (var dir in sourceDir.Directories.ToList())
+            foreach (var dir in sourceDir.Directories.Values.ToList())
                 if (!CopyDir_Internal(dir, existing))
                     return false;
 
@@ -707,24 +708,44 @@ namespace CM3D2.Toolkit.Arc
         {
             Logger.Debug("Copying '{0}' into '{1}'", sourceFile, targetDir);
 
-            var existing = targetDir.Files.FirstOrDefault(entry => entry.UTF16Hash == sourceFile.UTF16Hash);
+            string key = (!KeepDuplicateFiles) ? sourceFile.UTF16Hash.ToString() : targetDir.FullName + Path.DirectorySeparatorChar + sourceFile.Name;
+
+            var existing = targetDir.Files.ContainsKey(key) ? targetDir.Files[key] : null; //targetDir.Files.FirstOrDefault(entry => entry.UTF16Hash == sourceFile.UTF16Hash);
+
             // Delete file if Exists
             if (existing != null)
                 if (!Delete_Internal(existing))
                     return false;
 
             // Create new File
-            var newFile = new ArcFileEntry(this)
+            var entry = new ArcFileEntry(this)
             {
                 Name = sourceFile.Name,
                 Pointer = sourceFile.Pointer,
             };
-            _files.Add(newFile);
+            if (_files.ContainsKey(key))
+            {
+                if (targetDir.FullName.CompareTo(_files[key].Parent.FullName) > 0)
+                {
+                    //_files[newFile.UTF16Hash] = newFile;
 
-            // Set Parent 
-            newFile.SetParent(targetDir);
-            // Add to Children
-            targetDir.AddEntry(newFile);
+                    Delete_Internal(_files[key]);
+                    _files.Add(key, entry);
+
+                    // Set Parent 
+                    entry.SetParent(targetDir);
+                    // Add to Children
+                    targetDir.AddEntry(entry);
+                }
+            }
+            else
+            {
+                _files.Add(key, entry);
+                // Set Parent 
+                entry.SetParent(targetDir);
+                // Add to Children
+                targetDir.AddEntry(entry);
+            }
 
             return true;
         }
@@ -740,9 +761,10 @@ namespace CM3D2.Toolkit.Arc
             }
 
             // Delete File
+            string key = (!KeepDuplicateFiles) ? entry.UTF16Hash.ToString() : entry.FullName;
             var parent = (ArcDirectoryEntry) entry.Parent;
             parent.RemoveEntry(entry);
-            _files.Remove(entry);
+            _files.Remove(key);
             entry.Invalidate();
             return true;
         }
@@ -759,10 +781,10 @@ namespace CM3D2.Toolkit.Arc
             }
 
             // Delete each directory
-            foreach (var dir in entry.Directories.ToList())
+            foreach (var dir in entry.Directories.Values.ToList())
                 Delete_Internal(dir, true);
             // Delete each file
-            foreach (var file in entry.Files.ToList())
+            foreach (var file in entry.Files.Values.ToList())
                 Delete_Internal(file);
 
             return true;
@@ -789,10 +811,10 @@ namespace CM3D2.Toolkit.Arc
             {
 
                 // Delete each directory
-                foreach (var dir in entry.Directories.ToList())
+                foreach (var dir in entry.Directories.Values.ToList())
                     Delete_Internal(dir, true);
                 // Delete each file
-                foreach (var file in entry.Files.ToList())
+                foreach (var file in entry.Files.Values.ToList())
                     Delete_Internal(file);
             }
             else
@@ -844,7 +866,7 @@ namespace CM3D2.Toolkit.Arc
                     case ".":
                         continue;
                     default:
-                        var subDir = parent.Directories.FirstOrDefault(e => e.UTF16Hash == dummyDir.UTF16Hash);
+                        var subDir = parent.Directories.ContainsKey(dummyDir.UTF16Hash) ? parent.Directories[dummyDir.UTF16Hash] : null; //parent.Directories.FirstOrDefault(e => e.UTF16Hash == dummyDir.UTF16Hash);
                         if (create)
                             parent = subDir ?? GetOrCreateDirectory_Internal(segName, parent, true);
                         else if (subDir == null)
@@ -857,7 +879,7 @@ namespace CM3D2.Toolkit.Arc
             }
 
             // Return existing 
-            var existing = parent.Directories.FirstOrDefault(e => e.UTF16Hash == dummyDir.UTF16Hash);
+            var existing = parent.Directories.ContainsKey(dummyDir.UTF16Hash) ? parent.Directories[dummyDir.UTF16Hash] : null; //parent.Directories.FirstOrDefault(e => e.UTF16Hash == dummyDir.UTF16Hash);
             if (existing != null)
                 return existing;
 
@@ -906,7 +928,8 @@ namespace CM3D2.Toolkit.Arc
             }
 
             // Return existing 
-            var existing = parent.Files.FirstOrDefault(e => e.UTF16Hash == dummyFile.UTF16Hash);
+            string key = (!KeepDuplicateFiles) ? dummyFile.UTF16Hash.ToString() : parent.FullName + Path.DirectorySeparatorChar + dummyFile.Name;
+            var existing = parent.Files.ContainsKey(key) ? parent.Files[key] : null;//parent.Files.FirstOrDefault(e => e.UTF16Hash == dummyFile.UTF16Hash);
             if (existing != null)
                 return existing;
 
@@ -922,8 +945,25 @@ namespace CM3D2.Toolkit.Arc
                 Name = name,
                 Pointer = NullFilePointer.UncompressedPointer
             };
-            _files.Add(entry);
-            MoveFile_Internal(entry, parent);
+
+            if (_files.ContainsKey(key))
+            {
+                if (parent.FullName.CompareTo(_files[key].Parent.FullName) > 0)
+                {
+                    //_files[entry.UTF16Hash] = entry;
+
+                    Delete_Internal(_files[key]);
+                    _files.Add(key, entry);
+
+                    MoveFile_Internal(entry, parent);
+                }
+            }
+            else
+            {
+                _files.Add(key, entry);
+                MoveFile_Internal(entry, parent);
+            }
+
             return entry;
         }
 
@@ -962,12 +1002,12 @@ namespace CM3D2.Toolkit.Arc
             }
 
             // Apply Operation on all Files
-            foreach (var file in sourceDir.Files.ToList())
+            foreach (var file in sourceDir.Files.Values.ToList())
                 if (!fileOp(file, targetDir))
                     return false;
 
             // Apply Operation on all Directories
-            foreach (var dir in sourceDir.Directories.ToList())
+            foreach (var dir in sourceDir.Directories.Values.ToList())
                 if (!dirOp(dir, targetDir))
                     return false;
 
@@ -991,17 +1031,17 @@ namespace CM3D2.Toolkit.Arc
                 return false;
             }
 
-            var existing = targetDir.Directories.FirstOrDefault(entry => entry.UTF16Hash == sourceDir.UTF16Hash);
+            var existing = targetDir.Directories.ContainsKey(sourceDir.UTF16Hash) ? targetDir.Directories[sourceDir.UTF16Hash] : null; //targetDir.Directories.FirstOrDefault(entry => entry.UTF16Hash == sourceDir.UTF16Hash);
             // If Existing Directory
             if (existing != null)
             {
                 // Move all Files
-                foreach (var file in sourceDir.Files.ToList())
+                foreach (var file in sourceDir.Files.Values.ToList())
                     if (!MoveFile_Internal(file, existing))
                         return false;
 
                 // Move all Subdirs
-                foreach (var dir in sourceDir.Directories.ToList())
+                foreach (var dir in sourceDir.Directories.Values.ToList())
                     if (!MoveDir_Internal(dir, existing))
                         return false;
 
@@ -1025,7 +1065,8 @@ namespace CM3D2.Toolkit.Arc
                 return false;
             }
 
-            var existing = targetDir.Files.FirstOrDefault(entry => entry.UTF16Hash == sourceFile.UTF16Hash);
+            string key = (!KeepDuplicateFiles) ? sourceFile.UTF16Hash.ToString() : targetDir.FullName + Path.DirectorySeparatorChar + sourceFile.Name;
+            var existing = (targetDir.Files.ContainsKey(key) ? targetDir.Files[key] : null);//targetDir.Files.FirstOrDefault(entry => entry.UTF16Hash == sourceFile.UTF16Hash);
             // Delete Existing
             if (existing != null)
                 if (!Delete_Internal(existing))

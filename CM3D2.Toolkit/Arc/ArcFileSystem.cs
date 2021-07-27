@@ -7,10 +7,10 @@ using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
 
-using CM3D2.Toolkit.Arc.Entry;
-using CM3D2.Toolkit.Logging;
+using CM3D2.Toolkit.Guest4168Branch.Arc.Entry;
+using CM3D2.Toolkit.Guest4168Branch.Logging;
 
-namespace CM3D2.Toolkit.Arc
+namespace CM3D2.Toolkit.Guest4168Branch.Arc
 {
     // Public Facing
     /// <summary>
@@ -26,7 +26,7 @@ namespace CM3D2.Toolkit.Arc
         public ILogger Logger { get; set; } = NullLogger.Instance;
 
         private readonly List<ArcDirectoryEntry> _directories;
-        private readonly List<ArcFileEntry> _files;
+        private readonly Dictionary<string, ArcFileEntry> _files;
         private string _name;
         private bool _nameNotSet = true;
 
@@ -46,9 +46,9 @@ namespace CM3D2.Toolkit.Arc
         public IEnumerable<ArcDirectoryEntry> Directories => _directories;
 
         /// <summary>
-        ///     Listing of all Files
+        ///     Dictionary of all Files
         /// </summary>
-        public IEnumerable<ArcFileEntry> Files => _files;
+        public Dictionary<string, ArcFileEntry> Files => _files;
 
         /// <summary>
         ///     Internal Name of this .arc path
@@ -69,18 +69,30 @@ namespace CM3D2.Toolkit.Arc
         /// </summary>
         public ArcDirectoryEntry Root { get; }
 
-        private ArcFileSystem(bool dummy)
+        /// <summary>
+        ///     Variable to determine if loading actual files or just structure
+        /// </summary>
+        public bool HeirarchyOnly { get; }
+
+        /// <summary>
+        ///     Variable to determine if keeping duplicate files, works by using path, think _2 arc replacing contents of original
+        /// </summary>
+        public static bool KeepDuplicateFiles { get; set; }
+
+        private ArcFileSystem(bool dummy, bool heirarchyOnly, bool keepDupes)
         {
+            HeirarchyOnly = heirarchyOnly;
+            KeepDuplicateFiles = keepDupes;
             Root = new ArcDirectoryEntry(this);
 
             _directories = new List<ArcDirectoryEntry>();
-            _files = new List<ArcFileEntry>();
+            _files = new Dictionary<string, ArcFileEntry>();
         }
 
         /// <summary>
         ///     Creates a new Empty Instance of an Arc File System
         /// </summary>
-        public ArcFileSystem() : this(true)
+        public ArcFileSystem() : this(true, false, false)
         {
             Name = "root";
             _nameNotSet = true;
@@ -90,9 +102,69 @@ namespace CM3D2.Toolkit.Arc
         ///     Creates a new Empty Instance of an Arc File System named <paramref name="name" />
         /// </summary>
         /// <param name="name">File System Name</param>
-        public ArcFileSystem(string name) : this(true)
+        public ArcFileSystem(string name) : this(true, false, false)
         {
             Name = name;
+        }
+
+        /// <summary>
+        ///     Creates a new Empty Instance of an Arc File System
+        /// </summary>
+        public ArcFileSystem(bool heirarchyOnly) : this(true, heirarchyOnly, false)
+        {
+            Name = "root";
+            _nameNotSet = true;
+        }
+
+        /// <summary>
+        ///     Creates a new Empty Instance of an Arc File System named <paramref name="name" />
+        /// </summary>
+        /// <param name="name">File System Name</param>
+        public ArcFileSystem(string name, bool heirarchyOnly) : this(true, heirarchyOnly, false)
+        {
+            Name = name;
+        }
+
+        /// <summary>
+        ///     Creates a new Empty Instance of an Arc File System
+        /// </summary>
+        public ArcFileSystem(bool heirarchyOnly, bool keepDupes) : this(true, heirarchyOnly, keepDupes)
+        {
+            Name = "root";
+            _nameNotSet = true;
+        }
+
+        /// <summary>
+        ///     Creates a new Empty Instance of an Arc File System named <paramref name="name" />
+        /// </summary>
+        /// <param name="name">File System Name</param>
+        public ArcFileSystem(string name, bool heirarchyOnly, bool keepDupes) : this(true, heirarchyOnly, keepDupes)
+        {
+            Name = name;
+        }
+
+        /// <summary>
+        ///     Finds files of an extension
+        /// </summary>
+        /// <param name="extension">Extension</param>
+        /// <returns>Array of file names</returns>
+        public string[] GetFileListAtExtension(string extension)
+        {
+            extension = extension.Remove('.').Trim();
+
+            List<string> data = new List<string>();
+            if (_files != null)
+            {
+                foreach (ArcFileEntry arcFile in _files.Values)
+                {
+                    if (arcFile.Name.EndsWith("." + extension))
+                    {
+                        data.Add(arcFile.Name);
+                    }
+                }
+            }
+
+            return data.ToArray();
         }
 
         /// <summary>
@@ -101,8 +173,13 @@ namespace CM3D2.Toolkit.Arc
         /// <param name="arcFile">Arc File Path</param>
         /// <param name="parentDir">Parent Directory</param>
         /// <returns>True if Successful</returns>
-        public bool LoadArc(string arcFile, ArcDirectoryEntry parentDir)
+        public bool LoadArc(string arcFile, ArcDirectoryEntry parentDir, bool setArcDirectory = false)
         {
+            if (setArcDirectory)
+            {
+                parentDir.ArcPath = Path.GetFullPath(arcFile);
+            }
+
             Logger.Info("Loading Arc '{0}' into '{1}'", Path.GetFileName(arcFile), parentDir);
             return LoadArcFile_Internal(arcFile, parentDir);
         }

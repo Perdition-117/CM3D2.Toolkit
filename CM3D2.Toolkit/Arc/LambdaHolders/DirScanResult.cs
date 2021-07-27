@@ -1,4 +1,4 @@
-namespace CM3D2.Toolkit.Arc.LambdaHolders
+namespace CM3D2.Toolkit.Guest4168Branch.Arc.LambdaHolders
 {
     internal class DirScanResult
     {

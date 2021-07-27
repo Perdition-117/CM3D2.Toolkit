@@ -4,7 +4,7 @@
 
 using System.Text;
 
-namespace CM3D2.Toolkit
+namespace CM3D2.Toolkit.Guest4168Branch
 {
     /// <summary>
     ///     Data Hasher

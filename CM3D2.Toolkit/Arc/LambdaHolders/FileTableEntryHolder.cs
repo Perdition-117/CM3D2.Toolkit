@@ -2,9 +2,9 @@
 // CM3D2.Toolkit - FileTableEntryHolder.cs
 // --------------------------------------------------
 
-using CM3D2.Toolkit.Arc.FilePointer;
+using CM3D2.Toolkit.Guest4168Branch.Arc.FilePointer;
 
-namespace CM3D2.Toolkit.Arc.LambdaHolders
+namespace CM3D2.Toolkit.Guest4168Branch.Arc.LambdaHolders
 {
     internal class FileTableEntryHolder
     {

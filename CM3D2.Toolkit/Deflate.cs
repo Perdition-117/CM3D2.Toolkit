@@ -5,7 +5,7 @@
 using System.IO;
 using System.IO.Compression;
 
-namespace CM3D2.Toolkit
+namespace CM3D2.Toolkit.Guest4168Branch
 {
     /// <summary>
     ///     Contains Methods to Compress and Decompress data in the DEFLATE Specification

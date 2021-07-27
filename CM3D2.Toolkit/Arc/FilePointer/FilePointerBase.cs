@@ -4,7 +4,7 @@
 
 using System;
 
-namespace CM3D2.Toolkit.Arc.FilePointer
+namespace CM3D2.Toolkit.Guest4168Branch.Arc.FilePointer
 {
     /// <summary>
     ///     Base Class for all File Pointers

@@ -5,7 +5,7 @@
 
 using System.Runtime.CompilerServices;
 
-namespace CM3D2.Toolkit.Logging
+namespace CM3D2.Toolkit.Guest4168Branch.Logging
 {
     /// <summary>
     /// The <see cref="CM3D2.Toolkit.Logging"/> namespace contains classes for receiving Log Messages from the Library

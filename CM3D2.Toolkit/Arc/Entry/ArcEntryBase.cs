@@ -7,7 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 
-namespace CM3D2.Toolkit.Arc.Entry
+namespace CM3D2.Toolkit.Guest4168Branch.Arc.Entry
 {
     /// <summary>
     ///     Base class for Arc File System Entries
@@ -16,7 +16,7 @@ namespace CM3D2.Toolkit.Arc.Entry
     {
         private ArcFileSystem _fileSystem;
         private string _name;
-        private ArcEntryBase _parent;
+        private ArcDirectoryEntry _parent;
 
         /// <summary>
         ///     Entry Depth in the <see cref="ArcFileSystem"/> Tree
@@ -63,9 +63,9 @@ namespace CM3D2.Toolkit.Arc.Entry
         internal abstract string PreHash(string nameIn);
 
         /// <summary>
-        ///     Parent <see cref="ArcEntryBase"/> on the File System Tree
+        ///     Parent <see cref="ArcDirectoryEntry"/> on the File System Tree
         /// </summary>
-        public ArcEntryBase Parent => _parent;
+        public ArcDirectoryEntry Parent => _parent;
 
         internal ulong UniqueID => ArcFileSystem.Hasher.GetHash(FullName, true);
 
@@ -93,11 +93,19 @@ namespace CM3D2.Toolkit.Arc.Entry
             return $"\"{FullName}\"";
         }
 
-        internal void SetParent(ArcEntryBase newParent)
+        internal void SetParent(ArcDirectoryEntry newParent)
         {
             var oldParent = (ArcDirectoryEntry) Parent;
             oldParent?.RemoveEntry(this);
             _parent = newParent;
         }
+
+        /// <summary>
+        ///     Abstract method to determine if directory or file
+        /// </summary>
+        /// <returns>
+        ///     Boolean indicating Directory or File
+        /// </returns>
+        public abstract bool IsFile();
     }
 }

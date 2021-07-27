@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 
-namespace CM3D2.Toolkit.Arc.Native
+namespace CM3D2.Toolkit.Guest4168Branch.Arc.Native
 {
     internal static class NativeUtil
     {

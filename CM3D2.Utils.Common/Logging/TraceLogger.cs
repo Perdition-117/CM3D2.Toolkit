@@ -1,6 +1,6 @@
 using System;
 
-using CM3D2.Toolkit.Logging;
+using CM3D2.Toolkit.Guest4168Branch.Logging;
 
 namespace CM3D2.Utils.Common.Logging
 {

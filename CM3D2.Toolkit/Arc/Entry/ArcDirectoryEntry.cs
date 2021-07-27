@@ -4,16 +4,18 @@
 
 using System.Collections.Generic;
 using System.Linq;
+using System.IO;
 
-namespace CM3D2.Toolkit.Arc.Entry
+namespace CM3D2.Toolkit.Guest4168Branch.Arc.Entry
 {
     /// <summary>
     ///     Arc Directory Entry
     /// </summary>
     public class ArcDirectoryEntry : ArcEntryBase
     {
-        private List<ArcDirectoryEntry> _directories;
-        private List<ArcFileEntry> _files;
+        private Dictionary<ulong, ArcDirectoryEntry> _directories;
+        private Dictionary<string, ArcFileEntry> _files;
+        public string ArcPath { get; set; }
 
         internal override void Invalidate()
         {
@@ -23,24 +25,24 @@ namespace CM3D2.Toolkit.Arc.Entry
         }
 
         /// <summary>
-        ///     List of Sub Directories
+        ///     Dictionary of Sub Directories
         /// </summary>
-        public IEnumerable<ArcDirectoryEntry> Directories => _directories;
+        public Dictionary<ulong, ArcDirectoryEntry> Directories => _directories;
 
         /// <summary>
         ///     Directory Count
         /// </summary>
-        public int DirectoryCount => Directories.Count();
+        public int DirectoryCount => Directories.Values.Count();
 
         /// <summary>
         ///     File Count
         /// </summary>
-        public int FileCount => Files.Count();
+        public int FileCount => Files.Values.Count();
 
         /// <summary>
-        ///     List of Files
+        ///     Dictionary of Files
         /// </summary>
-        public IEnumerable<ArcFileEntry> Files => _files;
+        public Dictionary<string, ArcFileEntry> Files => _files;
 
         /// <summary>
         ///     Is the <see cref="ArcFileSystem.Root" /> of a <see cref="ArcFileSystem" />
@@ -53,8 +55,8 @@ namespace CM3D2.Toolkit.Arc.Entry
         /// <param name="fileSystem">File System</param>
         internal ArcDirectoryEntry(ArcFileSystem fileSystem) : base(fileSystem)
         {
-            _directories = new List<ArcDirectoryEntry>();
-            _files = new List<ArcFileEntry>();
+            _directories = new Dictionary<ulong, ArcDirectoryEntry>();
+            _files = new Dictionary<string, ArcFileEntry>();
         }
 
         internal void AddEntry(ArcEntryBase entry)
@@ -76,12 +78,44 @@ namespace CM3D2.Toolkit.Arc.Entry
 
         internal void AddEntry(ArcFileEntry entry)
         {
-            _files.Add(entry);
+            //If not keeping duplicates
+            if (!ArcFileSystem.KeepDuplicateFiles)
+            {
+                //Replace vs Add (replace could be used alone, but this was better for debugging)
+                if (_files.ContainsKey(entry.UTF16Hash.ToString()))
+                {
+                    _files[entry.UTF16Hash.ToString()] = entry;
+                }
+                else
+                {
+                    _files.Add(entry.UTF16Hash.ToString(), entry);
+                }
+            }
+            else
+            {
+                //If the path is the same, just replace, it won't actually be different
+                if (_files.ContainsKey(this.FullName + Path.DirectorySeparatorChar + entry.Name))
+                {
+                    _files[this.FullName + Path.DirectorySeparatorChar + entry.Name] = entry;
+                }
+                else
+                {
+                    _files.Add(this.FullName + Path.DirectorySeparatorChar + entry.Name, entry);
+                }
+            }
         }
 
         internal void AddEntry(ArcDirectoryEntry entry)
         {
-            _directories.Add(entry);
+            //Replace vs Add (replace could be used alone, but this was better for debugging)
+            if (_directories.ContainsKey(entry.UTF16Hash))
+            {
+                _directories[entry.UTF16Hash] = entry;
+            }
+            else
+            {
+                _directories.Add(entry.UTF16Hash, entry);
+            }
         }
 
         internal override string PreHash(string nameIn)
@@ -109,12 +143,24 @@ namespace CM3D2.Toolkit.Arc.Entry
 
         internal void RemoveEntry(ArcFileEntry entry)
         {
-            _files.Remove(entry);
+            if (!ArcFileSystem.KeepDuplicateFiles)
+            {
+                _files.Remove(entry.UTF16Hash.ToString());
+            }
+            else
+            {
+                _files.Remove(entry.FullName);
+            }
         }
 
         internal void RemoveEntry(ArcDirectoryEntry entry)
         {
-            _directories.Remove(entry);
+            _directories.Remove(entry.UTF16Hash);
+        }
+
+        public override bool IsFile()
+        {
+            return false;
         }
     }
 }

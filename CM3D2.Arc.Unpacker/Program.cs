@@ -8,8 +8,8 @@ using System.IO;
 using System.Linq;
 
 using CM3D2.Toolkit;
-using CM3D2.Toolkit.Arc;
-using CM3D2.Toolkit.Logging;
+using CM3D2.Toolkit.Guest4168Branch.Arc;
+using CM3D2.Toolkit.Guest4168Branch.Logging;
 using CM3D2.Utils.Common;
 using CM3D2.Utils.Common.Logging;
 
@@ -61,7 +61,7 @@ namespace CM3D2.Arc.Unpacker
 
                 var cnt = 0;
                 var tot = afs.Files.Count();
-                foreach (var entry in afs.Files)
+                foreach (var entry in afs.Files.Values)
                 {
                     cnt++;
                     var shortName = entry.Name;

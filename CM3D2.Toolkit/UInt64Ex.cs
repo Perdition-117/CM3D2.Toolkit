@@ -9,7 +9,7 @@ using System.Runtime.InteropServices;
 
 #endregion
 
-namespace CM3D2.Toolkit
+namespace CM3D2.Toolkit.Guest4168Branch
 {
     /// <summary>
     ///     Packed UInt64, with Individually Accessible Words

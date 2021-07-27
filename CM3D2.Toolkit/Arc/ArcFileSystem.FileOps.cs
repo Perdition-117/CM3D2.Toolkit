@@ -4,9 +4,9 @@
 
 using System.IO;
 
-using CM3D2.Toolkit.Arc.Entry;
+using CM3D2.Toolkit.Guest4168Branch.Arc.Entry;
 
-namespace CM3D2.Toolkit.Arc
+namespace CM3D2.Toolkit.Guest4168Branch.Arc
 {
     public partial class ArcFileSystem
     {

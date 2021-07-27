@@ -8,7 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 
-namespace CM3D2.Toolkit
+namespace CM3D2.Toolkit.Guest4168Branch
 {
     internal static class Extensions
     {

@@ -1,4 +1,4 @@
-namespace CM3D2.Toolkit.Logging
+namespace CM3D2.Toolkit.Guest4168Branch.Logging
 {
     /// <summary>
     ///     Simple Logging Abstraction Layer
