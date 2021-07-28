@@ -13,7 +13,7 @@ namespace CM3D2.Toolkit.Guest4168Branch.Arc.Entry
     /// </summary>
     public class ArcDirectoryEntry : ArcEntryBase
     {
-        private Dictionary<ulong, ArcDirectoryEntry> _directories;
+        private Dictionary<string, ArcDirectoryEntry> _directories;
         private Dictionary<string, ArcFileEntry> _files;
         public string ArcPath { get; set; }
 
@@ -27,7 +27,7 @@ namespace CM3D2.Toolkit.Guest4168Branch.Arc.Entry
         /// <summary>
         ///     Dictionary of Sub Directories
         /// </summary>
-        public Dictionary<ulong, ArcDirectoryEntry> Directories => _directories;
+        public Dictionary<string, ArcDirectoryEntry> Directories => _directories;
 
         /// <summary>
         ///     Directory Count
@@ -55,7 +55,7 @@ namespace CM3D2.Toolkit.Guest4168Branch.Arc.Entry
         /// <param name="fileSystem">File System</param>
         internal ArcDirectoryEntry(ArcFileSystem fileSystem) : base(fileSystem)
         {
-            _directories = new Dictionary<ulong, ArcDirectoryEntry>();
+            _directories = new Dictionary<string, ArcDirectoryEntry>();
             _files = new Dictionary<string, ArcFileEntry>();
         }
 
@@ -82,13 +82,13 @@ namespace CM3D2.Toolkit.Guest4168Branch.Arc.Entry
             if (!ArcFileSystem.KeepDuplicateFiles)
             {
                 //Replace vs Add (replace could be used alone, but this was better for debugging)
-                if (_files.ContainsKey(entry.UTF16Hash.ToString()))
+                if (_files.ContainsKey(entry.Name.ToString()))
                 {
-                    _files[entry.UTF16Hash.ToString()] = entry;
+                    _files[entry.Name.ToString()] = entry;
                 }
                 else
                 {
-                    _files.Add(entry.UTF16Hash.ToString(), entry);
+                    _files.Add(entry.Name.ToString(), entry);
                 }
             }
             else
@@ -108,13 +108,13 @@ namespace CM3D2.Toolkit.Guest4168Branch.Arc.Entry
         internal void AddEntry(ArcDirectoryEntry entry)
         {
             //Replace vs Add (replace could be used alone, but this was better for debugging)
-            if (_directories.ContainsKey(entry.UTF16Hash))
+            if (_directories.ContainsKey(entry.Name))
             {
-                _directories[entry.UTF16Hash] = entry;
+                _directories[entry.Name] = entry;
             }
             else
             {
-                _directories.Add(entry.UTF16Hash, entry);
+                _directories.Add(entry.Name, entry);
             }
         }
 
@@ -145,7 +145,7 @@ namespace CM3D2.Toolkit.Guest4168Branch.Arc.Entry
         {
             if (!ArcFileSystem.KeepDuplicateFiles)
             {
-                _files.Remove(entry.UTF16Hash.ToString());
+                _files.Remove(entry.Name.ToString());
             }
             else
             {
@@ -155,7 +155,7 @@ namespace CM3D2.Toolkit.Guest4168Branch.Arc.Entry
 
         internal void RemoveEntry(ArcDirectoryEntry entry)
         {
-            _directories.Remove(entry.UTF16Hash);
+            _directories.Remove(entry.Name);
         }
 
         public override bool IsFile()

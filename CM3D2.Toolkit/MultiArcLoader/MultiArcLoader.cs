@@ -198,7 +198,8 @@ namespace CM3D2.Toolkit.Guest4168Branch.MultiArcLoader
         //Post Load Methods
         public string[] GetFileListAtExtension(string extension)
         {
-            extension = (extension.Contains(".") ? extension.Remove('.') : extension).Trim();
+            extension = extension.Trim();
+            extension = (extension.StartsWith(".") ? extension.Substring(1) : extension).Trim();
 
             List<string> data = new List<string>();
             if (arc != null)

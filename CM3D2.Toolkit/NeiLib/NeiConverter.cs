@@ -1,4 +1,5 @@
-﻿using System;
+﻿using CM3D2.Toolkit.Guest4168Branch.NUtyLocal;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -36,7 +37,7 @@ namespace NeiLib
 			0xFF
 		};
 
-		private static readonly Encoding ShiftJisEncoding = Encoding.GetEncoding(932);
+		//private static readonly Encoding ShiftJisEncoding = Encoding.GetEncoding(932);
 
 		private static char ValueSeparator { get; set; }
 
@@ -147,7 +148,7 @@ namespace NeiLib
 				var row = values[rowIndex];
 				for (var colIndex = 0; colIndex < cols; colIndex++)
 					encodedValues[colIndex + rowIndex * cols] = colIndex < row.Count
-						? ShiftJisEncoding.GetBytes(row[colIndex])
+						? NUtyLocal.ConvStringToByte(row[colIndex], NUtyLocal.ENCO.SHIFT_JIS)
 						: new byte[0];
 			}
 
@@ -193,6 +194,7 @@ namespace NeiLib
 
 		public static List<List<string>> ToCSVList(string filePath) => ParseCSV(ToCSV(Encryption.DecryptBytes(File.ReadAllBytes(filePath), NEI_KEY)));
 		public static List<List<string>> ToCSVList(Stream stream) => ParseCSV(ToCSV(Encryption.DecryptBytes(ReadFully(stream), NEI_KEY)));
+		public static List<List<string>> ToCSVList(byte[] bytes) => ParseCSV(ToCSV(Encryption.DecryptBytes(bytes, NEI_KEY)));
 		public static Stream ToCSV(string filePath) => ToCSV(Encryption.DecryptBytes(File.ReadAllBytes(filePath), NEI_KEY));
 		public static Stream ToCSV(Stream stream) => ToCSV(Encryption.DecryptBytes(ReadFully(stream), NEI_KEY));
 		public static Stream ToCSV(byte[] neiData)
@@ -221,10 +223,10 @@ namespace NeiLib
 			for (var cell = 0; cell < cols * rows; cell++)
 			{
 				var len = strLengths[cell];
-				//values[cell] = NUty.SjisToUnicode(br.ReadBytes(len)).Substring(0, Math.Max(len - 1, 0));
-				values[cell] = ShiftJisEncoding.GetString(br.ReadBytes(len), 0, Math.Max(len - 1, 0));
+				values[cell] = NUtyLocal.SjisToUnicode(br.ReadBytes(len));
+				//values[cell] = ShiftJisEncoding.GetString(br.ReadBytes(len), 0, Math.Max(len - 1, 0));
 
-				Console.WriteLine($"got cell value of {values[cell]}");
+				//Console.WriteLine($"got cell value of {values[cell]}");
 			}
 
 			MemoryStream memoryStream = new MemoryStream();

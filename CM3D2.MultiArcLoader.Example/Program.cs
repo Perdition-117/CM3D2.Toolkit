@@ -25,11 +25,11 @@ namespace CM3D2.MultiArc.Example
             sal.LoadArcs();
 
             //Get only the anm files
-            string[] files = sal.GetFileListAtExtension("anm");
+            string[] files = sal.GetFileListAtExtension(".nei");
             foreach (string file in files)
             {
                 string id = "X".PadLeft(10, '0');
-                string name = file.Split(new string[] { ".anm" }, System.StringSplitOptions.RemoveEmptyEntries)[0];
+                string name = file.Split(new string[] { ".nei" }, System.StringSplitOptions.RemoveEmptyEntries)[0];
                 data.Add(new List<string>() { id, name });
             }
 

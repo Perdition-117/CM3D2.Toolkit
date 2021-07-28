@@ -676,7 +676,7 @@ namespace CM3D2.Toolkit.Guest4168Branch.Arc
                 return false;
             }
 
-            var existing = targetDir.Directories.ContainsKey(sourceDir.UTF16Hash) ? targetDir.Directories[sourceDir.UTF16Hash] : null; //targetDir.Directories.FirstOrDefault(entry => entry.UTF16Hash == sourceDir.UTF16Hash);
+            var existing = targetDir.Directories.ContainsKey(sourceDir.Name) ? targetDir.Directories[sourceDir.Name] : null; //targetDir.Directories.FirstOrDefault(entry => entry.UTF16Hash == sourceDir.UTF16Hash);
             // Create Folder if not Exists
             if (existing == null)
             {
@@ -708,7 +708,7 @@ namespace CM3D2.Toolkit.Guest4168Branch.Arc
         {
             Logger.Debug("Copying '{0}' into '{1}'", sourceFile, targetDir);
 
-            string key = (!KeepDuplicateFiles) ? sourceFile.UTF16Hash.ToString() : targetDir.FullName + Path.DirectorySeparatorChar + sourceFile.Name;
+            string key = (!KeepDuplicateFiles) ? sourceFile.Name.ToString() : targetDir.FullName + Path.DirectorySeparatorChar + sourceFile.Name;
 
             var existing = targetDir.Files.ContainsKey(key) ? targetDir.Files[key] : null; //targetDir.Files.FirstOrDefault(entry => entry.UTF16Hash == sourceFile.UTF16Hash);
 
@@ -761,7 +761,7 @@ namespace CM3D2.Toolkit.Guest4168Branch.Arc
             }
 
             // Delete File
-            string key = (!KeepDuplicateFiles) ? entry.UTF16Hash.ToString() : entry.FullName;
+            string key = (!KeepDuplicateFiles) ? entry.Name.ToString() : entry.FullName;
             var parent = (ArcDirectoryEntry) entry.Parent;
             parent.RemoveEntry(entry);
             _files.Remove(key);
@@ -866,7 +866,7 @@ namespace CM3D2.Toolkit.Guest4168Branch.Arc
                     case ".":
                         continue;
                     default:
-                        var subDir = parent.Directories.ContainsKey(dummyDir.UTF16Hash) ? parent.Directories[dummyDir.UTF16Hash] : null; //parent.Directories.FirstOrDefault(e => e.UTF16Hash == dummyDir.UTF16Hash);
+                        var subDir = parent.Directories.ContainsKey(dummyDir.Name) ? parent.Directories[dummyDir.Name] : null; //parent.Directories.FirstOrDefault(e => e.UTF16Hash == dummyDir.UTF16Hash);
                         if (create)
                             parent = subDir ?? GetOrCreateDirectory_Internal(segName, parent, true);
                         else if (subDir == null)
@@ -879,7 +879,7 @@ namespace CM3D2.Toolkit.Guest4168Branch.Arc
             }
 
             // Return existing 
-            var existing = parent.Directories.ContainsKey(dummyDir.UTF16Hash) ? parent.Directories[dummyDir.UTF16Hash] : null; //parent.Directories.FirstOrDefault(e => e.UTF16Hash == dummyDir.UTF16Hash);
+            var existing = parent.Directories.ContainsKey(dummyDir.Name) ? parent.Directories[dummyDir.Name] : null; //parent.Directories.FirstOrDefault(e => e.UTF16Hash == dummyDir.UTF16Hash);
             if (existing != null)
                 return existing;
 
@@ -928,7 +928,7 @@ namespace CM3D2.Toolkit.Guest4168Branch.Arc
             }
 
             // Return existing 
-            string key = (!KeepDuplicateFiles) ? dummyFile.UTF16Hash.ToString() : parent.FullName + Path.DirectorySeparatorChar + dummyFile.Name;
+            string key = (!KeepDuplicateFiles) ? dummyFile.Name.ToString() : parent.FullName + Path.DirectorySeparatorChar + dummyFile.Name;
             var existing = parent.Files.ContainsKey(key) ? parent.Files[key] : null;//parent.Files.FirstOrDefault(e => e.UTF16Hash == dummyFile.UTF16Hash);
             if (existing != null)
                 return existing;
@@ -1031,7 +1031,7 @@ namespace CM3D2.Toolkit.Guest4168Branch.Arc
                 return false;
             }
 
-            var existing = targetDir.Directories.ContainsKey(sourceDir.UTF16Hash) ? targetDir.Directories[sourceDir.UTF16Hash] : null; //targetDir.Directories.FirstOrDefault(entry => entry.UTF16Hash == sourceDir.UTF16Hash);
+            var existing = targetDir.Directories.ContainsKey(sourceDir.Name) ? targetDir.Directories[sourceDir.Name] : null; //targetDir.Directories.FirstOrDefault(entry => entry.UTF16Hash == sourceDir.UTF16Hash);
             // If Existing Directory
             if (existing != null)
             {
@@ -1065,7 +1065,7 @@ namespace CM3D2.Toolkit.Guest4168Branch.Arc
                 return false;
             }
 
-            string key = (!KeepDuplicateFiles) ? sourceFile.UTF16Hash.ToString() : targetDir.FullName + Path.DirectorySeparatorChar + sourceFile.Name;
+            string key = (!KeepDuplicateFiles) ? sourceFile.Name.ToString() : targetDir.FullName + Path.DirectorySeparatorChar + sourceFile.Name;
             var existing = (targetDir.Files.ContainsKey(key) ? targetDir.Files[key] : null);//targetDir.Files.FirstOrDefault(entry => entry.UTF16Hash == sourceFile.UTF16Hash);
             // Delete Existing
             if (existing != null)

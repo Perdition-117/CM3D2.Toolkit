@@ -75,6 +75,8 @@
     <Compile Include="NamespaceDoc.cs" />
     <Compile Include="NeiLib\Encryption.cs" />
     <Compile Include="NeiLib\NeiConverter.cs" />
+    <Compile Include="NUtyLocal\NUtyLocal.cs" />
+    <Compile Include="NUtyLocal\UnicodeTable.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="UInt64Ex.cs" />
   </ItemGroup>
