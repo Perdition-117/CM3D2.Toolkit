@@ -78,6 +78,14 @@ namespace CM3D2.Toolkit.Guest4168Branch.Arc.FilePointer
             }
         }
 
+        public string ArcFile
+        {
+            get
+            {
+                return _arcFile;
+            }
+        }
+
         /// <summary>
         ///     Creates a new Arc File Pointer at the Specified Offset
         /// </summary>

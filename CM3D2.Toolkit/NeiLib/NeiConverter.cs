@@ -185,25 +185,84 @@ namespace NeiLib
 
 			return Encryption.EncryptBytes(data, NEI_KEY);
 		}
+		//private static string Escape(string value)
+		//{
+		//	//value = value.Replace('\0', ' ').Trim();
+
+		//	if (!value.Contains(ValueSeparator) && !value.Contains('\n'))
+		//		return value;
+		//	return $"\"{value.Replace("\"", "\"\"")}\"";
+		//}
 		private static string Escape(string value)
 		{
-			if (!value.Contains(ValueSeparator) && !value.Contains('\n'))
-				return value;
-			return $"\"{value.Replace("\"", "\"\"")}\"";
+			return $"|{value}|";
 		}
 
-		public static List<List<string>> ToCSVList(string filePath) => ParseCSV(ToCSV(Encryption.DecryptBytes(File.ReadAllBytes(filePath), NEI_KEY)));
-		public static List<List<string>> ToCSVList(Stream stream) => ParseCSV(ToCSV(Encryption.DecryptBytes(ReadFully(stream), NEI_KEY)));
-		public static List<List<string>> ToCSVList(byte[] bytes) => ParseCSV(ToCSV(Encryption.DecryptBytes(bytes, NEI_KEY)));
-		public static Stream ToCSV(string filePath) => ToCSV(Encryption.DecryptBytes(File.ReadAllBytes(filePath), NEI_KEY));
-		public static Stream ToCSV(Stream stream) => ToCSV(Encryption.DecryptBytes(ReadFully(stream), NEI_KEY));
-		public static Stream ToCSV(byte[] neiData)
+		public static List<List<string>> ToCSVList(string filePath) => ToCSV(Encryption.DecryptBytes(File.ReadAllBytes(filePath), NEI_KEY)); //ParseCSV(ToCSV(Encryption.DecryptBytes(File.ReadAllBytes(filePath), NEI_KEY)));
+		public static List<List<string>> ToCSVList(Stream stream) => ToCSV(Encryption.DecryptBytes(ReadFully(stream), NEI_KEY)); //ParseCSV(ToCSV(Encryption.DecryptBytes(ReadFully(stream), NEI_KEY)));
+		public static List<List<string>> ToCSVList(byte[] bytes) => ToCSV(Encryption.DecryptBytes(bytes, NEI_KEY)); //ParseCSV(ToCSV(Encryption.DecryptBytes(bytes, NEI_KEY)));
+		//public static Stream ToCSV(string filePath) => ToCSV(Encryption.DecryptBytes(File.ReadAllBytes(filePath), NEI_KEY));
+		//public static Stream ToCSV(Stream stream) => ToCSV(Encryption.DecryptBytes(ReadFully(stream), NEI_KEY));
+		//public static Stream ToCSV(byte[] neiData)
+		//{
+		//	var ms = new MemoryStream(neiData);
+		//	var br = new BinaryReader(ms);
+		//	if (!br.ReadBytes(4).SequenceEqual(NEI_MAGIC))
+		//	{
+		//		Console.WriteLine($"The passed stream is not a valid NEI file");
+		//		return null;
+		//	}
+
+		//	var cols = br.ReadUInt32();
+		//	var rows = br.ReadUInt32();
+
+		//	var strLengths = new int[cols * rows];
+
+		//	for (var cell = 0; cell < cols * rows; cell++)
+		//	{
+		//		br.ReadInt32(); // Total length of all strings because why not
+		//		strLengths[cell] = br.ReadInt32();
+		//	}
+
+		//	var values = new string[cols * rows];
+
+		//	for (var cell = 0; cell < cols * rows; cell++)
+		//	{
+		//		var len = strLengths[cell];
+		//		values[cell] = NUtyLocal.SjisToUnicode(br.ReadBytes(len));
+		//		//values[cell] = ShiftJisEncoding.GetString(br.ReadBytes(len), 0, Math.Max(len - 1, 0));
+
+		//		//Console.WriteLine($"got cell value of {values[cell]}");
+		//	}
+
+		//	MemoryStream memoryStream = new MemoryStream();
+		//	var tw = new StreamWriter(memoryStream);
+
+		//	for (var row = 0; row < rows; row++)
+		//	{
+		//		for (var col = 0; col < cols; col++)
+		//		{
+		//			string str = Escape(values[row * cols + col]);
+		//			tw.Write(str);
+		//			if (col != cols - 1)
+		//				tw.Write(ValueSeparator);
+		//		}
+
+		//		tw.WriteLine();
+		//	}
+
+		//	tw.Flush();
+
+		//	memoryStream.Seek(0, SeekOrigin.Begin);
+		//	return memoryStream;
+		//}
+		private static List<List<string>> ToCSV(byte[] neiData)
 		{
 			var ms = new MemoryStream(neiData);
 			var br = new BinaryReader(ms);
 			if (!br.ReadBytes(4).SequenceEqual(NEI_MAGIC))
 			{
-				Console.WriteLine($"The passed stream is not a valid NEI file");
+				//Console.WriteLine($"The passed stream is not a valid NEI file");
 				return null;
 			}
 
@@ -218,36 +277,35 @@ namespace NeiLib
 				strLengths[cell] = br.ReadInt32();
 			}
 
-			var values = new string[cols * rows];
+			List<List<string>> CSVFile = new List<List<string>>();
+			var currentCol = 0;
+			var currentRow = 0;
 
+			var values = new string[cols * rows];
 			for (var cell = 0; cell < cols * rows; cell++)
 			{
 				var len = strLengths[cell];
-				values[cell] = NUtyLocal.SjisToUnicode(br.ReadBytes(len));
-				//values[cell] = ShiftJisEncoding.GetString(br.ReadBytes(len), 0, Math.Max(len - 1, 0));
 
-				//Console.WriteLine($"got cell value of {values[cell]}");
-			}
-
-			MemoryStream memoryStream = new MemoryStream();
-			var tw = new StreamWriter(memoryStream);
-
-			for (var row = 0; row < rows; row++)
-			{
-				for (var col = 0; col < cols; col++)
+				if (currentCol == 0)
 				{
-					tw.Write(Escape(values[row * cols + col]));
-					if (col != cols - 1)
-						tw.Write(ValueSeparator);
+					CSVFile.Add(new List<string>());
 				}
 
-				tw.WriteLine();
+				//values[cell] = ShiftJisEncoding.GetString(br.ReadBytes(len), 0, Math.Max(len - 1, 0));
+				var cellVal = NUtyLocal.SjisToUnicode(br.ReadBytes(len));
+
+				CSVFile[currentRow].Add(cellVal.Trim('\0'));
+
+				currentCol++;
+
+				if (currentCol >= cols)
+				{
+					currentCol = 0;
+					currentRow++;
+				}
 			}
 
-			tw.Flush();
-
-			memoryStream.Seek(0, SeekOrigin.Begin);
-			return memoryStream;
+			return CSVFile;
 		}
 		private static byte[] ReadFully(Stream input)
 		{
@@ -262,5 +320,55 @@ namespace NeiLib
 				return ms.ToArray();
 			}
 		}
+
+		//public static List<List<string>> ToCSVListDocGuest(byte[] bytes)
+        //{
+		//	byte[] neiData = Encryption.DecryptBytes(bytes, NEI_KEY);
+
+		//	var ms = new MemoryStream(neiData);
+		//	var br = new BinaryReader(ms);
+		//	if (!br.ReadBytes(4).SequenceEqual(NEI_MAGIC))
+		//	{
+		//		Console.WriteLine($"The passed stream is not a valid NEI file");
+		//		return null;
+		//	}
+
+		//	var cols = br.ReadUInt32();
+		//	var rows = br.ReadUInt32();
+
+		//	var strLengths = new int[cols * rows];
+
+		//	for (var cell = 0; cell < cols * rows; cell++)
+		//	{
+		//		br.ReadInt32(); // Total length of all strings because why not
+		//		strLengths[cell] = br.ReadInt32();
+		//	}
+
+		//	var values = new string[cols * rows];
+
+		//	for (var cell = 0; cell < cols * rows; cell++)
+		//	{
+		//		var len = strLengths[cell];
+		//		values[cell] = NUtyLocal.SjisToUnicode(br.ReadBytes(len));
+		//		//values[cell] = ShiftJisEncoding.GetString(br.ReadBytes(len), 0, Math.Max(len - 1, 0));
+
+		//		//Console.WriteLine($"got cell value of {values[cell]}");
+		//	}
+
+		//	List<List<string>> results = new List<List<string>>();
+
+		//	for (var row = 0; row < rows; row++)
+		//	{
+		//		List<string> rw = new List<string>();
+		//		for (var col = 0; col < cols; col++)
+		//		{
+		//			string str = values[row * cols + col].Replace("\0", "");
+		//			rw.Add(str);
+		//		}
+		//		results.Add(rw);
+		//	}
+
+		//	return results;
+        //}
 	}
 }

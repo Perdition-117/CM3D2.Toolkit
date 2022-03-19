@@ -79,9 +79,8 @@ namespace CM3D2.Toolkit.Guest4168Branch.Arc
         /// </summary>
         public static bool KeepDuplicateFiles { get; set; }
 
-        private ArcFileSystem(bool dummy, bool heirarchyOnly, bool keepDupes)
+        private ArcFileSystem(bool dummy, bool keepDupes)
         {
-            HeirarchyOnly = heirarchyOnly;
             KeepDuplicateFiles = keepDupes;
             Root = new ArcDirectoryEntry(this);
 
@@ -92,7 +91,7 @@ namespace CM3D2.Toolkit.Guest4168Branch.Arc
         /// <summary>
         ///     Creates a new Empty Instance of an Arc File System
         /// </summary>
-        public ArcFileSystem() : this(true, false, false)
+        public ArcFileSystem() : this(true, false)
         {
             Name = "root";
             _nameNotSet = true;
@@ -102,7 +101,7 @@ namespace CM3D2.Toolkit.Guest4168Branch.Arc
         ///     Creates a new Empty Instance of an Arc File System named <paramref name="name" />
         /// </summary>
         /// <param name="name">File System Name</param>
-        public ArcFileSystem(string name) : this(true, false, false)
+        public ArcFileSystem(string name) : this(true, false)
         {
             Name = name;
         }
@@ -110,7 +109,7 @@ namespace CM3D2.Toolkit.Guest4168Branch.Arc
         /// <summary>
         ///     Creates a new Empty Instance of an Arc File System
         /// </summary>
-        public ArcFileSystem(bool heirarchyOnly) : this(true, heirarchyOnly, false)
+        public ArcFileSystem(bool keepDupes) : this(true, keepDupes)
         {
             Name = "root";
             _nameNotSet = true;
@@ -120,25 +119,7 @@ namespace CM3D2.Toolkit.Guest4168Branch.Arc
         ///     Creates a new Empty Instance of an Arc File System named <paramref name="name" />
         /// </summary>
         /// <param name="name">File System Name</param>
-        public ArcFileSystem(string name, bool heirarchyOnly) : this(true, heirarchyOnly, false)
-        {
-            Name = name;
-        }
-
-        /// <summary>
-        ///     Creates a new Empty Instance of an Arc File System
-        /// </summary>
-        public ArcFileSystem(bool heirarchyOnly, bool keepDupes) : this(true, heirarchyOnly, keepDupes)
-        {
-            Name = "root";
-            _nameNotSet = true;
-        }
-
-        /// <summary>
-        ///     Creates a new Empty Instance of an Arc File System named <paramref name="name" />
-        /// </summary>
-        /// <param name="name">File System Name</param>
-        public ArcFileSystem(string name, bool heirarchyOnly, bool keepDupes) : this(true, heirarchyOnly, keepDupes)
+        public ArcFileSystem(string name, bool keepDupes) : this(true, keepDupes)
         {
             Name = name;
         }
