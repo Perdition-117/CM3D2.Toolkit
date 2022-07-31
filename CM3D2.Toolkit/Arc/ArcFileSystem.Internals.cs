@@ -105,7 +105,7 @@ namespace CM3D2.Toolkit.Guest4168Branch.Arc
                 var head = br.ReadBytes(20); // Arc Header
                 if (!head.SequenceEqual(ArcHeader))
                 {
-                    Logger.Error("Invalid File Format");
+                    Logger.Error("Invalid File Format: '{0}' into '{1}'", arcFile, target);
                     return false;
                 }
 

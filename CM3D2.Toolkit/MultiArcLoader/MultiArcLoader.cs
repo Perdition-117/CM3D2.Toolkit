@@ -1,5 +1,6 @@
 ﻿using CM3D2.Toolkit.Guest4168Branch.Arc;
 using CM3D2.Toolkit.Guest4168Branch.Arc.Entry;
+using CM3D2.Toolkit.Guest4168Branch.Logging;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -18,15 +19,26 @@ namespace CM3D2.Toolkit.Guest4168Branch.MultiArcLoader
         string hierarchyPath;
         bool keepDupes;
         LoadMethod loadMethod;
+        ILogger log;
 
         //Instance
         List<List<string>> arcFilePathsDivided;
         List<ArcFileSystem> arcFilePathsDividedArcs;
         public ArcFileSystem arc;
         public List<string> arcFilePaths { get; set; }
-        
 
-        public MultiArcLoader(string[] dirs, int threads, LoadMethod loadingMethod = LoadMethod.Single, bool hierarchyOnlyFromCache = false, string hierachyCachePath = null, bool keepDuplicates = false, Exclude exclude = Exclude.None)
+        public MultiArcLoader(string[] dirs, int threads, LoadMethod loadingMethod = LoadMethod.Single, bool keepDuplicates = false, Exclude exclude = Exclude.None, ILogger logger = null) : this(dirs, threads, loadingMethod, false, null, keepDuplicates, exclude, logger)
+        {
+        }
+
+        public MultiArcLoader(string[] dirs, int threads, LoadMethod loadingMethod = LoadMethod.Single, bool hierarchyOnlyFromCache = false, bool keepDuplicates = false, Exclude exclude = Exclude.None) : this(dirs, threads, loadingMethod, hierarchyOnlyFromCache, null, keepDuplicates, exclude, null)
+        {
+        }
+        public MultiArcLoader(string[] dirs, int threads, LoadMethod loadingMethod = LoadMethod.Single, bool hierarchyOnlyFromCache = false, bool keepDuplicates = false, Exclude exclude = Exclude.None, ILogger logger = null) : this(dirs, threads, loadingMethod, hierarchyOnlyFromCache, null, keepDuplicates, exclude, logger)
+        {
+        }
+
+        public MultiArcLoader(string[] dirs, int threads, LoadMethod loadingMethod = LoadMethod.Single, bool hierarchyOnlyFromCache = false, string hierachyCachePath = null, bool keepDuplicates = false, Exclude exclude = Exclude.None, ILogger logger = null)
         {
             directories = dirs;
             threadCount = Math.Max(1, threads);
@@ -35,6 +47,12 @@ namespace CM3D2.Toolkit.Guest4168Branch.MultiArcLoader
             hierarchyPath = hierachyCachePath;
             keepDupes = keepDuplicates;
             loadMethod = loadingMethod;
+            log = logger;
+
+            if(log == null)
+            {
+                log = NullLogger.Instance;
+            }
         }
 
         public void LoadArcs()
@@ -94,14 +112,14 @@ namespace CM3D2.Toolkit.Guest4168Branch.MultiArcLoader
                                 FileInfo fi = new FileInfo(arcPath);
                                 if (!fi.LastWriteTimeUtc.Equals(cacheKvp.Value.dte))
                                 {
-                                    Console.WriteLine(String.Format("MultiArcLoader: ARC File has been modified (UTC) since last cache:{0} Cache: {1} File: {2}", arcPath, cacheKvp.Value.dte.ToString(), fi.LastWriteTimeUtc));
+                                    log.Info(String.Format("MultiArcLoader: ARC File has been modified (UTC) since last cache:{0} Cache: {1} File: {2}", arcPath, cacheKvp.Value.dte.ToString(), fi.LastWriteTimeUtc));
                                     buildFromCache = false;
                                     break;
                                 }
                             }
                             else
                             {
-                                Console.WriteLine(String.Format("MultiArcLoader: ARC File not found:{0}", arcPath));
+                                log.Error(String.Format("MultiArcLoader: ARC File not found:{0}", arcPath));
                                 buildFromCache = false;
                                 break;
                             }
@@ -116,15 +134,15 @@ namespace CM3D2.Toolkit.Guest4168Branch.MultiArcLoader
                     }
                     else
                     {
-                        Console.WriteLine(String.Format("MultiArcLoader: ARC File list does not match"));
+                        log.Error(String.Format("MultiArcLoader: ARC File list does not match"));
                     }
                 }
                 else
                 {
-                    Console.WriteLine(String.Format("MultiArcLoader: ARC Hierarchy File not found:{0}", hierarchyPath));
+                    log.Info(String.Format("MultiArcLoader: ARC Hierarchy File not found:{0}", hierarchyPath));
                 }
 
-                Console.WriteLine("MultiArcLoader: LoadArcs will now build the full data");
+                log.Info("MultiArcLoader: LoadArcs will now build the full data");
             }
 
             //Divide work up based on size
@@ -156,14 +174,22 @@ namespace CM3D2.Toolkit.Guest4168Branch.MultiArcLoader
             {
                 tasks[i] = Task.Factory.StartNew(loadArcsInTask, i.ToString());
             }
+
             Task.WaitAll(tasks);
 
 
             //After finishing threads, copy everything to single ARC
-            arc = arcFilePathsDividedArcs[0];
+            arc = null; 
             for (int i = 1; i < threadCount; i++)
             {
-                arc.MergeCopy(arcFilePathsDividedArcs[i].Root, arc.Root);
+                if (arc == null)
+                {
+                    arc = arcFilePathsDividedArcs[i];
+                }
+                else if(arcFilePathsDividedArcs[i] != null)
+                {
+                    arc.MergeCopy(arcFilePathsDividedArcs[i].Root, arc.Root);
+                }
             }
 
             //Build a cache if necessary
@@ -256,32 +282,51 @@ namespace CM3D2.Toolkit.Guest4168Branch.MultiArcLoader
             int index = Int32.Parse(i as string);
             List<string> arcFilePaths = arcFilePathsDivided[index];
 
-            ArcFileSystem afs = new ArcFileSystem("root", keepDupes);
-
-            if (arcFilePaths.Count > 0)
+            try
             {
-                //Loop paths
-                foreach (String arcFilePath in arcFilePaths)
-                {
-                    //Load into the next arc
-                    //Console.WriteLine("Task " + index + ": " + arcFilePath);
+                ArcFileSystem afs = new ArcFileSystem("root", keepDupes);
+                afs.Logger = log;
 
-                    switch (loadMethod)
+                if (arcFilePaths.Count > 0)
+                {
+                    //Loop paths
+                    foreach (String arcFilePath in arcFilePaths)
                     {
-                        case LoadMethod.Single:
+                        //Load into the next arc
+                        //Console.WriteLine("Task " + index + ": " + arcFilePath);
+
+                        switch (loadMethod)
+                        {
+                            case LoadMethod.Single:
                             {
                                 string arcName = Path.GetFileNameWithoutExtension(arcFilePath);
                                 ArcDirectoryEntry dir = afs.CreateDirectory(arcName, afs.Root);
-                                afs.LoadArc(arcFilePath, dir, true);
+                                try
+                                {
+                                    afs.LoadArc(arcFilePath, dir, true);
+                                }
+                                catch(Exception ex)
+                                {
+                                    log.Error("Unhandled Exception:{0}", ex.ToString());
+                                }
                                 break;
                             }
-                        case LoadMethod.MiniTemps:
+                            case LoadMethod.MiniTemps:
                             {
                                 ArcFileSystem afsTemp = new ArcFileSystem(hierarchyPath, keepDupes);
-                                afsTemp.LoadArc(arcFilePath, afsTemp.Root, true);
+                                afsTemp.Logger = log;
+                                try
+                                {
+                                    afsTemp.LoadArc(arcFilePath, afsTemp.Root, true);
 
-                                //Combine to shared arc
-                                afs.MergeCopy(afsTemp.Root, afs.Root);
+                                    //Combine to shared arc
+                                    afs.MergeCopy(afsTemp.Root, afs.Root);
+                                }
+                                catch (Exception ex)
+                                {
+                                    log.Error("Unhandled Exception:{0}", ex.ToString());
+                                }
+                                
                                 break;
                             }
                             //case LoadMethod.SingleIgnoreArcNames:
@@ -289,12 +334,18 @@ namespace CM3D2.Toolkit.Guest4168Branch.MultiArcLoader
                             //        afs.LoadArc(arcFilePath, afs.Root);
                             //        break;
                             //    }
+                        }
                     }
                 }
-            }
 
-            //Copy out
-            arcFilePathsDividedArcs[index] = afs;
+                //Copy out
+                arcFilePathsDividedArcs[index] = afs;
+            }
+            catch(Exception ex)
+            {
+                log.Error("Unhandled Exception:{0}", ex.ToString());
+                arcFilePathsDividedArcs[index] = null;
+            }
         }
 
         //Post Load Methods
@@ -410,13 +461,7 @@ namespace CM3D2.Toolkit.Guest4168Branch.MultiArcLoader
                 foreach(string fullPath in kvpArc.Value.files)
                 {
                     string fixedPath = fullPath.Substring(pathPrefix).Substring(root.Length);
-                    //string dirPath = fixedPath.Substring(0, fixedPath.LastIndexOf(Path.DirectorySeparatorChar));
-                    //arcH.CreateDirectory(dirPath);
                     ArcFileEntry newFile = arcH.CreateFile(fixedPath);
-                    if(newFile == null)
-                    {
-                        Console.WriteLine("Error");
-                    }
                 }
             }
 
