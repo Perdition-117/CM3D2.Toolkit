@@ -180,7 +180,7 @@ namespace CM3D2.Toolkit.Guest4168Branch.MultiArcLoader
 
             //After finishing threads, copy everything to single ARC
             arc = null; 
-            for (int i = 1; i < threadCount; i++)
+            for (int i = 0; i < threadCount; i++)
             {
                 if (arc == null)
                 {
