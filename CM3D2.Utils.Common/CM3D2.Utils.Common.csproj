@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net4.5</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
     <Title>CM3D2.Utils.Common</Title>
     <Copyright>Copyright ©  2016</Copyright>
   </PropertyGroup>

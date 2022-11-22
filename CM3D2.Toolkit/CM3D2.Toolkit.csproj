@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net3.5</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
     <BaseOutputPath>..\bin\</BaseOutputPath>
     <Title>CM3D2.Toolkit.Guest4168Branch</Title>
     <Product>CM3D2.Toolkit.Guest4168Branch</Product>

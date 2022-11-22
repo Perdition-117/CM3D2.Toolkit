@@ -2,6 +2,7 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
+    <TargetFramework>net6.0</TargetFramework>
     <Title>CM3D2.MultiArc.Example</Title>
     <Copyright>Copyright ©  2021</Copyright>
   </PropertyGroup>

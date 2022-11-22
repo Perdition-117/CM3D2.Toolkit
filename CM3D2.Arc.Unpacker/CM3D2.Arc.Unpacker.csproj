@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net4.5</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
     <AssemblyName>arcunpack</AssemblyName>
     <BaseOutputPath>..\bin\</BaseOutputPath>
     <Title>CM3D2 ARC Unpacker</Title>
