@@ -2,6 +2,8 @@
 
   <PropertyGroup>
     <TargetFramework>net4.5</TargetFramework>
+    <Title>CM3D2.Utils.Common</Title>
+    <Copyright>Copyright ©  2016</Copyright>
   </PropertyGroup>
 
   <ItemGroup>

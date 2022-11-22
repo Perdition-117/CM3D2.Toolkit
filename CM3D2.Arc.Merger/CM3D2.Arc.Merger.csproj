@@ -5,6 +5,9 @@
     <TargetFramework>net4.5</TargetFramework>
     <AssemblyName>arcmerge</AssemblyName>
     <BaseOutputPath>..\bin\</BaseOutputPath>
+    <Title>CM3D2 ARC Merger</Title>
+    <Product>CM3D2.Arc.Merger</Product>
+    <Copyright>Copyright ©  2016</Copyright>
   </PropertyGroup>
 
   <ItemGroup>

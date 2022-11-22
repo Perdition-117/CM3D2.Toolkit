@@ -3,6 +3,9 @@
   <PropertyGroup>
     <TargetFramework>net3.5</TargetFramework>
     <BaseOutputPath>..\bin\</BaseOutputPath>
+    <Title>CM3D2.Toolkit.Guest4168Branch</Title>
+    <Product>CM3D2.Toolkit.Guest4168Branch</Product>
+    <Copyright>Copyright ©  2021</Copyright>
   </PropertyGroup>
 
   <ItemGroup>

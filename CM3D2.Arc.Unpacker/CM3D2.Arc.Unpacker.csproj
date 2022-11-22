@@ -5,6 +5,9 @@
     <TargetFramework>net4.5</TargetFramework>
     <AssemblyName>arcunpack</AssemblyName>
     <BaseOutputPath>..\bin\</BaseOutputPath>
+    <Title>CM3D2 ARC Unpacker</Title>
+    <Product>CM3D2.Arc.Unpacker</Product>
+    <Copyright>Copyright © Usagirei 2016</Copyright>
   </PropertyGroup>
 
   <ItemGroup>

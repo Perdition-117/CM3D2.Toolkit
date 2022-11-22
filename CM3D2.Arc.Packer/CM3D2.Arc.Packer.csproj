@@ -5,6 +5,9 @@
     <TargetFramework>net4.5</TargetFramework>
     <AssemblyName>arcpack</AssemblyName>
     <BaseOutputPath>..\bin\</BaseOutputPath>
+    <Title>CM3D2 ARC Packer</Title>
+    <Product>CM3D2.Arc.Packer</Product>
+    <Copyright>Copyright ©  2016</Copyright>
   </PropertyGroup>
 
   <ItemGroup>
