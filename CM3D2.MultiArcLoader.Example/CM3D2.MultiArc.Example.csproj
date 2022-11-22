@@ -13,7 +13,7 @@
 
   <ItemGroup>
     <Reference Include="Assembly-CSharp-firstpass">
-      <HintPath>..\..\COM3D2.MoreFacilities.Plugin\COM3D2.MoreFacilities.Plugin\lib\Assembly-CSharp-firstpass.dll</HintPath>
+      <HintPath>lib\Assembly-CSharp-firstpass.dll</HintPath>
     </Reference>
   </ItemGroup>
 
