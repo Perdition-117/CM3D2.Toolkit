@@ -41,15 +41,10 @@ namespace NeiLib
 
             var iv = GenerateIV(ivSeed);
 
-            var rijndael = new RijndaelManaged();
-            rijndael.Padding = PaddingMode.None;
+            var aes = Aes.Create();
+            aes.Key = key;
 
-            var decryptor = rijndael.CreateDecryptor(key, iv);
-            var mem = new MemoryStream(encryptedBytes, 0, encryptedBytes.Length - 5);
-            var stream = new CryptoStream(mem, decryptor, CryptoStreamMode.Read);
-            var output = new byte[encryptedBytes.Length - extraDataSize - 5];
-
-            stream.Read(output, 0, output.Length);
+            var output = aes.DecryptCbc(encryptedBytes.AsSpan(0, encryptedBytes.Length - 5), iv, PaddingMode.None);
 
             return output;
         }
