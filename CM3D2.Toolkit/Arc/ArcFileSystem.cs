@@ -131,7 +131,7 @@ namespace CM3D2.Toolkit.Guest4168Branch.Arc
         /// <returns>Array of file names</returns>
         public string[] GetFileListAtExtension(string extension)
         {
-            extension = extension.Remove('.').Trim();
+            extension = extension.TrimStart('.').Trim();
 
             List<string> data = new List<string>();
             if (_files != null)
