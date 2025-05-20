@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace CM3D2.Toolkit.Guest4168Branch.MultiArcLoader
@@ -91,7 +92,7 @@ namespace CM3D2.Toolkit.Guest4168Branch.MultiArcLoader
                 if (System.IO.File.Exists(hierarchyPath))
                 {
                     //Load from file
-                    MultiArcLoaderHierarchyCache cache = Newtonsoft.Json.JsonConvert.DeserializeObject<MultiArcLoaderHierarchyCache>(File.ReadAllText(hierarchyPath));
+                    MultiArcLoaderHierarchyCache cache = JsonSerializer.Deserialize<MultiArcLoaderHierarchyCache>(File.ReadAllText(hierarchyPath));
                     List<string> cacheFiles = cache.data.Keys.ToList<string>();
                     cacheFiles.Sort();
 
@@ -225,7 +226,7 @@ namespace CM3D2.Toolkit.Guest4168Branch.MultiArcLoader
                 }
 
                 //Write file
-                File.WriteAllText(hierarchyPath, Newtonsoft.Json.JsonConvert.SerializeObject(hierarchy));
+                File.WriteAllText(hierarchyPath, JsonSerializer.Serialize(hierarchy));
             }
         }
 
